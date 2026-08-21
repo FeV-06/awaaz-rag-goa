@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>आवाज़ AWAAZ — Voice-Enabled Indic RAG</title>
+<style>
+  :root {
+    --bg: #07090e;
+    --panel: #0d1219;
+    --panel2: #111826;
+    --line: #1d2735;
+    --ink: #dbe4f0;
+    --dim: #6b7a90;
+    --mag: #ff4dad;
+    --cyn: #19d3ff;
+    --amb: #ffb454;
+    --grn: #2ee6a8;
+    --red: #ff5d5d;
+    --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    --sans: "Inter", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    background:
+      radial-gradient(1200px 600px at 80% -10%, rgba(255,77,173,.07), transparent 60%),
+      radial-gradient(900px 500px at 0% 110%, rgba(25,211,255,.06), transparent 60%),
+      var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.5;
+  }
+  a { color: var(--cyn); }
+  code, .mono { font-family: var(--mono); }
+
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; padding: 14px 22px;
+    border-bottom: 1px solid var(--line);
+    background: rgba(13,18,25,.8);
+    backdrop-filter: blur(6px);
+    position: sticky; top: 0; z-index: 10;
+  }
+  .wordmark { display: flex; align-items: baseline; gap: 12px; }
+  .wordmark .deva { font-size: 26px; color: var(--mag); font-weight: 700; letter-spacing: .5px; }
+  .wordmark .latn { font-family: var(--mono); font-size: 16px; letter-spacing: 6px; color: var(--ink); font-weight: 600; }
+  .wordmark .sub { font-family: var(--mono); font-size: 11px; color: var(--dim); letter-spacing: 1.5px; }
+
+  .status { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; font-family: var(--mono); font-size: 11px; }
+  .chip {
+    border: 1px solid var(--line); background: var(--panel2); color: var(--dim);
+    padding: 4px 10px; border-radius: 999px; white-space: nowrap;
+  }
+  .chip b { color: var(--ink); font-weight: 600; }
+  .chip .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 6px; background: var(--dim); }
+  .chip.ok .dot { background: var(--grn); box-shadow: 0 0 8px var(--grn); }
+  .chip.warn .dot { background: var(--amb); }
+
+  main { display: grid; grid-template-columns: minmax(320px, 420px) 1fr; gap: 18px; padding: 20px 22px; max-width: 1400px; margin: 0 auto; }
+
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
+  .card h2 { font-family: var(--mono); font-size: 11px; letter-spacing: 2px; color: var(--dim); text-transform: uppercase; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+  .card h2 .acc { color: var(--mag); }
+
+  /* ask panel */
+  .langs { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+  .lang {
+    font-family: var(--mono); font-size: 12px; letter-spacing: 1px;
+    padding: 6px 14px; border-radius: 8px; cursor: pointer;
+    border: 1px solid var(--line); color: var(--dim); background: transparent;
+  }
+  .lang[data-active="1"] { border-color: var(--mag); color: var(--ink); background: rgba(255,77,173,.1); box-shadow: 0 0 12px rgba(255,77,173,.15); }
+
+  textarea {
+    width: 100%; min-height: 92px; resize: vertical;
+    background: var(--panel2); color: var(--ink);
+    border: 1px solid var(--line); border-radius: 10px;
+    padding: 12px 14px; font-family: var(--mono); font-size: 14px;
+  }
+  textarea:focus { outline: none; border-color: var(--cyn); }
+
+  .row { display: flex; gap: 10px; margin-top: 10px; align-items: center; }
+  button {
+    font-family: var(--mono); font-size: 13px; letter-spacing: 1px;
+    padding: 10px 18px; border-radius: 10px; cursor: pointer;
+    border: 1px solid var(--mag); background: rgba(255,77,173,.12); color: var(--ink);
+    transition: background .15s, transform .05s;
+  }
+  button:hover { background: rgba(255,77,173,.25); }
+  button:active { transform: translateY(1px); }
+  button.primary { background: var(--mag); color: #080018; font-weight: 700; border-color: var(--mag); }
+  button.primary:hover { background: #ff6dbc; }
+  button.rec { border-color: var(--red); background: rgba(255,93,93,.1); color: var(--red); }
+  button.rec.on { background: var(--red); color: #fff; animation: pulse 1.2s infinite; }
+  button:disabled { opacity: .45; cursor: not-allowed; }
+  @keyframes pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(255,93,93,.4);} 50% { box-shadow: 0 0 0 8px rgba(255,93,93,0);} }
+
+  .examples { margin-top: 16px; }
+  .examples .ex {
+    font-family: var(--mono); font-size: 12px; color: var(--dim);
+    padding: 7px 10px; border: 1px solid var(--line); border-radius: 8px;
+    margin-bottom: 6px; cursor: pointer; background: var(--panel2);
+  }
+  .examples .ex:hover { border-color: var(--cyn); color: var(--ink); }
+  .examples .ex .lg { color: var(--mag); margin-right: 8px; }
+
+  .hint { font-family: var(--mono); font-size: 11px; color: var(--dim); margin-top: 10px; }
+
+  /* response */
+  #res { min-height: 420px; }
+
+  .latrow { display: flex; align-items: baseline; gap: 14px; margin-bottom: 14px; }
+  .latell { font-family: var(--mono); font-size: 42px; font-weight: 800; color: var(--cyn); letter-spacing: 1px; }
+  .latell small { font-size: 14px; color: var(--dim); font-weight: 400; margin-left: 4px; }
+  .latsrc { font-family: var(--mono); font-size: 11px; color: var(--dim); }
+
+  .answer { background: var(--panel2); border-left: 3px solid var(--cyn); border-radius: 0 10px 10px 0; padding: 14px 16px; margin-bottom: 14px; font-size: 15px; }
+  .answer.declined { border-left-color: var(--red); }
+  .answer .src-badge {
+    display: inline-block; font-family: var(--mono); font-size: 10px; letter-spacing: 1px;
+    padding: 2px 8px; border-radius: 6px; margin-bottom: 8px; background: rgba(25,211,255,.12); color: var(--cyn);
+  }
+  .answer.declined .src-badge { background: rgba(255,93,93,.12); color: var(--red); }
+
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
+  .gchip { font-family: var(--mono); font-size: 10px; letter-spacing: .5px; padding: 3px 8px; border-radius: 6px; border: 1px solid var(--line); color: var(--dim); }
+  .gchip.pass { color: var(--grn); border-color: rgba(46,230,168,.35); }
+  .gchip.warn { color: var(--amb); border-color: rgba(255,180,84,.35); }
+
+  .stages { font-family: var(--mono); font-size: 12px; }
+  .stage { display: grid; grid-template-columns: 200px 1fr 64px; gap: 10px; align-items: center; padding: 5px 0; }
+  .stage .sname { color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .stage .track { height: 6px; background: var(--panel2); border-radius: 4px; overflow: hidden; }
+  .stage .fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--cyn), var(--mag)); }
+  .stage .sval { text-align: right; color: var(--ink); }
+  .stage.bad .fill { background: linear-gradient(90deg, var(--amb), var(--red)); }
+  .stage.bad .sname, .stage.bad .sval { color: var(--red); }
+
+  details.sources { margin-top: 16px; border-top: 1px solid var(--line); padding-top: 12px; }
+  details.sources summary { font-family: var(--mono); font-size: 11px; letter-spacing: 2px; color: var(--dim); cursor: pointer; }
+  .src { font-size: 13px; color: var(--dim); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; margin-top: 8px; }
+  .src .meta { font-family: var(--mono); font-size: 10px; color: var(--mag); margin-bottom: 4px; }
+
+  #blank { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 300px; color: var(--dim); font-family: var(--mono); font-size: 13px; letter-spacing: 2px; text-align: center; }
+  #blank .big { font-size: 40px; margin-bottom: 12px; opacity: .5; }
+
+  footer { text-align: center; font-family: var(--mono); font-size: 11px; color: var(--dim); padding: 24px; letter-spacing: 1px; }
+
+  @media (max-width: 900px) {
+    main { grid-template-columns: 1fr; }
+    .stage { grid-template-columns: 130px 1fr 56px; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="wordmark">
+    <span class="deva">आवाज़</span>
+    <span class="latn">AWAAZ</span>
+    <span class="sub">VOICE&nbsp;·&nbsp;INDIC&nbsp;·&nbsp;RAG</span>
+  </div>
+  <div class="status" id="status">connecting…</div>
+</header>
+
+<main>
+  <!-- ASK -->
+  <section>
+    <div class="card">
+      <h2>ask <span class="acc">▼</span></h2>
+      <div class="langs" id="langs"></div>
+      <textarea id="q" placeholder="Type a question in English, हिंदी, or मराठी…"></textarea>
+      <div class="row">
+        <button id="ask" class="primary">ASK ▸</button>
+        <button id="mic" class="rec">● REC</button>
+      </div>
+      <div class="hint" id="michint">or hold ●REC and speak — audio is transcribed by Sarvam Saaras v3.</div>
+      <div class="examples">
+        <div class="ex" data-q="What is retrieval augmented generation?"><span class="lg">en</span>What is retrieval augmented generation?</div>
+        <div class="ex" data-q="रिट्रीवल ऑगमेंटेड जनरेशन क्या है?"><span class="lg">hi</span>रिट्रीवल ऑगमेंटेड जनरेशन क्या है?</div>
+        <div class="ex" data-q="FAISS म्हणजे काय आणि ते कसे काम करते?"><span class="lg">mr</span>FAISS म्हणजे काय आणि ते कसे काम करते?</div>
+        <div class="ex" data-q="Who was the director of the Manhattan Project?"><span class="lg">en</span>Who was the director of the Manhattan Project?</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RESPONSE -->
+  <section>
+    <div class="card" id="res">
+      <h2>response <span class="acc">◤</span></h2>
+      <div id="blank">
+        <div class="big">⟨ ⟩</div>
+        STANDBY<br/>ask something to light it up
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>AWAAZ — low-latency voice-enabled Indic RAG · FAISS HNSW · cascaded guardrails · Sarvam STT · &lt;200ms</footer>
+
+<script>
+"use strict";
+const $ = (s) => document.querySelector(s);
+
+const LANGUAGES = { en: "English", hi: "हिंदी", mr: "मराठी" };
+let activeLang = "en";
+let mediaRec = null;
+let recChunks = [];
+
+/* ---- health / status ---- */
+(async function boot() {
+  try {
+    const h = await (await fetch("/health")).json();
+    const langs = (h.configured_languages || []).join(" | ");
+    const idx = Object.entries(h.indexes_loaded || {}).map(([k, v]) => `${k}:${v}`).join(" ");
+    $('#status').innerHTML =
+      `<span class="chip ok"><span class="dot"></span>ONLINE</span>` +
+      `<span class="chip"><b>${langs}</b></span>` +
+      `<span class="chip">${idx}</span>` +
+      `<span class="chip">net:${h.allow_network_calls ? "LLM-ON" : "local-only"}</span>`;
+    const langsEl = $("#langs");
+    for (const [code, name] of Object.entries(LANGUAGES)) {
+      const b = document.createElement("button");
+      b.className = "lang"; b.textContent = code.toUpperCase() + " " + name;
+      b.dataset.active = code === activeLang ? "1" : "0";
+      const go = () => { activeLang = code; document.querySelectorAll(".lang").forEach(x => x.dataset.active = x.dataset.code === code ? "1" : "0"); };
+      b.dataset.code = code;
+      b.onclick = () => { go(); };
+      langsEl.appendChild(b);
+    }
+  } catch (e) { $('#status').innerHTML = `<span class="chip warn">OFFLINE</span>`; }
+})();
+
+/* ---- examples ---- */
+document.querySelectorAll(".ex").forEach(ex => {
+  ex.onclick = () => { $("#q").value = ex.dataset.q; void doAsk(); };
+});
+
+/* ---- ask (text) ---- */
+async function doAsk(textOverride) {
+  const q = (textOverride ?? $("#q").value).trim();
+  if (!q) return;
+  setBusy(true);
+  const fd = new FormData();
+  fd.append("text", q);
+  fd.append("language_hint", activeLang);
+  try {
+    const r = await fetch("/query", { method: "POST", body: fd });
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    render(await r.json());
+  } catch (e) {
+    render({ error: String(e), answer: "Request failed: " + e, answer_source: "error", total_ms: 0, stage_timings: [] });
+  } finally { setBusy(false); }
+}
+$("#ask").onclick = () => doAsk();
+$("#q").addEventListener("keydown", (e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) doAsk(); });
+
+/* ---- ask (voice) ---- */
+$("#mic").onclick = async () => {
+  if (mediaRec && mediaRec.state === "recording") { mediaRec.stop(); return; }
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    mediaRec = new MediaRecorder(stream);
+    recChunks = [];
+    mediaRec.ondataavailable = (e) => { if (e.data.size) recChunks.push(e.data); };
+    mediaRec.onstop = async () => {
+      stream.getTracks().forEach(t => t.stop());
+      $("#mic").classList.remove("on");
+      setBusy(true);
+      const fd = new FormData();
+      fd.append("file", new Blob(recChunks, { type: "audio/webm" }), "query.webm");
+      fd.append("language_hint", activeLang);
+      try {
+        const r = await fetch("/query", { method: "POST", body: fd });
+        render(await r.json());
+      } catch (e) { render({ error: String(e), answer: "Request failed: " + e, answer_source: "error", total_ms: 0, stage_timings: [] }); }
+      finally { setBusy(false); }
+    };
+    mediaRec.start();
+    $("#mic").classList.add("on");
+  } catch (e) { alert("Mic unavailable: " + e.message); }
+};
+
+function setBusy(b) { $("#ask").disabled = b; $("#mic").disabled = b; }
+
+/* ---- render ---- */
+const KNOWN = {
+  stt_transcription: "STT", language_routing: "route", pre_retrieval_safety_guardrail: "safety",
+  pre_retrieval_intent_guardrail: "intent", query_embedding: "embed", pre_retrieval_topic_guardrail: "topic",
+  semantic_answer_cache: "cache", vector_retrieval_and_merge: "retrieve", bm25_cross_encoder_reranking: "rerank",
+  context_chunk_safety_guardrail: "ctx-guard", generation: "generate", post_generation_grounding_guardrail: "ground",
+};
+const ORDER = [
+  "stt_transcription", "language_routing", "pre_retrieval_safety_guardrail", "pre_retrieval_intent_guardrail",
+  "query_embedding", "pre_retrieval_topic_guardrail", "semantic_answer_cache", "vector_retrieval_and_merge",
+  "bm25_cross_encoder_reranking", "context_chunk_safety_guardrail", "generation", "post_generation_grounding_guardrail",
+];
+
+function render(d) {
+  const res = $("#res");
+  if (d.error) { res.innerHTML = `<h2>response <span class="acc">◤</span></h2><div class="answer declined">${d.error}</div>`; return; }
+
+  const declined = d.answer_source === "declined";
+  const stages = (ORDER.map(n => d.stage_timings?.find(s => s.stage === n)).filter(Boolean))
+    .sort((a, b) => (b.ms || 0) - (a.ms || 0));
+  const max = Math.max(0.1, ...stages.map(s => s.ms || 0));
+
+  const gf = d.guardrail_flags || {};
+  const gchips = [];
+  const G = [
+    ["unsafe_detected", "unsafe"], ["off_topic_detected", "off-topic"], ["intent_detected", "intent"],
+    ["grounding_passed", "grounded"], ["safety_model_failed", "model-fail"],
+  ];
+  for (const [k, label] of G) {
+    if (k === "grounding_passed") gchips.push(`<span class="gchip ${gf[k] ? "pass" : "warn"}">${label}:${gf[k] ? "PASS" : "FAIL"}</span>`);
+    else if (gf[k]) gchips.push(`<span class="gchip warn">${label}</span>`);
+  }
+
+  const sources = (d.retrieved_chunks || []).map((c, i) =>
+    `<div class="src"><div class="meta">#${i + 1} · ${c.chunk_strategy} · ${c.source_lang} · score ${(c.final_score ?? c.dense_score ?? 0).toFixed(3)}</div>${escapeHtml((c.text || "").slice(0, 320))}${(c.text || "").length > 320 ? "…" : ""}</div>`
+  ).join("");
+
+  res.innerHTML = `
+    <h2>response <span class="acc">◤</span></h2>
+    <div class="latrow">
+      <div class="latell">${(d.total_ms || 0).toFixed(1)}<small>ms</small></div>
+      <div class="latsrc">total · retrieval ${(d.retrieval_ms || 0).toFixed(1)}ms · lang ${d.language_detected || "?"}</div>
+    </div>
+    <div class="answer ${declined ? "declined" : ""}">
+      <span class="src-badge">${escapeHtml(d.answer_source || "")}</span><br/>
+      ${escapeHtml(d.answer || "")}
+    </div>
+    <div class="chips">${gchips.join("") || `<span class="gchip">${d.guardrail_flags?.decline_reason_code || "no flags"}</span>`}</div>
+    <h2>stage timing <span class="acc">▤</span></h2>
+    <div class="stages">
+      ${stages.map(s => `
+        <div class="stage ${s.success ? "" : "bad"}">
+          <span class="sname">${KNOWN[s.stage] || s.stage}</span>
+          <div class="track"><div class="fill" style="width:${Math.max(2, (s.ms / max) * 100)}%"></div></div>
+          <span class="sval">${s.ms.toFixed(1)}</span>
+        </div>`).join("") || `<div class="stage"><span class="sname">no stages</span></div>`}
+    </div>
+    ${sources ? `<details class="sources"><summary>RETRIEVED SOURCES (${d.retrieved_chunks.length})</summary>${sources}</details>` : ""}
+  `;
+}
+
+function escapeHtml(s) { return String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
+</script>
+</body>
+</html>

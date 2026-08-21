@@ -1,0 +1,19 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+.env
+
+# JS (retired frontend — kept only if reintroduced)
+node_modules/
+dist/
+
+# Raw dataset parquets are large and rebuilt from ai4bharat/MSMARCO-XI
+data/raw/*.parquet
+
+# Built indexes & model artifacts — too large for GitHub (100 MB/file cap).
+# Built locally via retrieval/build_indexes_gpu.py; the pipeline self-heals
+# from data/processed/*_corpus.jsonl if they are absent.
+data/indexes/
+data/onnx_models/
+data/hf_cache/
