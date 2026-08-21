@@ -89,7 +89,7 @@ See [`docs/API_REFERENCE.md`](docs/API_REFERENCE.md) and [`docs/TASK_REQUIREMENT
 
 ## Benchmark results (measured on Arch Linux · 6c/12t · Ryzen-class 4.0GHz · 31GB RAM · CPU-only)
 
-Commits under `benchmark/results/`. All runs use the shipped configuration (ONNX-CPU runtime, cross-encoder ON, cache enabled unless stated).
+Committed under `benchmark/results/`. All runs use the shipped configuration (ONNX-CPU runtime, cross-encoder ON, cache enabled unless stated).
 
 ### End-to-end latency (99 queries, en+hi+mr, `benchmark/run_latency_bench.py`)
 
