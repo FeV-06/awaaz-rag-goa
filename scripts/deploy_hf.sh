@@ -41,7 +41,10 @@ PY
 }
 
 echo ">> copying repo files into Space clone"
-rsync -a --exclude '.git' --exclude '.venv' --exclude 'data/raw/*.parquet' ./ "$TMP/space/"
+rsync -a --exclude '.git' --exclude '.venv' \
+  --exclude 'data/raw/*.parquet' \
+  --exclude 'data/onnx_models' --exclude 'data/hf_cache' \
+  ./ "$TMP/space/"
 
 echo ">> pushing (large files land on HF storage; first push may take a while)"
 cd "$TMP/space"
