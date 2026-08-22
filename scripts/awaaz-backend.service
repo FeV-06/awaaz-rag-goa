@@ -1,0 +1,13 @@
+# AWAAZ backend systemd user service.
+#
+# Install:
+#   cp scripts/awaaz-backend.service ~/.config/systemd/user/
+#   systemctl --user daemon-reload
+#   systemctl --user enable --now awaaz-backend
+#   loginctl enable-linger fev      # start at boot without login (already on this box)
+#
+# Notes:
+# - PYTHONPATH is cleared on purpose: the hermes-agent venv on this machine
+#   shadows project site-packages if left set.
+# - The service binds 0.0.0.0:7860 — the Tailscale funnel /awaaz proxies to it.
+# - Logs: journalctl --user -u awaaz-backend -f
