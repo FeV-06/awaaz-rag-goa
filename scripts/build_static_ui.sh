@@ -17,11 +17,13 @@ mkdir -p "$OUT"
 sed "s|<script>|<script>window.AWAAZ_API_BASE = \"${API_BASE}\";</script>\n<script>|" "$SRC" > "$OUT/index.html"
 
 # minimal HF static-space metadata (kept tiny; index.html is the app)
+# NOTE: colorFrom/colorTo must be from HF's allowed set:
+# [red, yellow, green, blue, indigo, purple, pink, gray]
 cat > "$OUT/README.md" <<MD
 ---
 title: Awaaz — Voice-Enabled Indic RAG
 emoji: 🗣️
-colorFrom: stone
+colorFrom: gray
 colorTo: yellow
 sdk: static
 pinned: false
