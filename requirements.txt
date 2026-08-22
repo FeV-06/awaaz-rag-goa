@@ -23,3 +23,4 @@ psutil>=5.9
 tqdm>=4.66
 pytest>=7.4
 onnx>=1.16
+sarvamai>=0.1.30
