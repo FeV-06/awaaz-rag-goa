@@ -7,10 +7,21 @@
 #   HF_USER=<name> HF_TOKEN=hf_xxx ./scripts/deploy_static_hf.sh https://host:port
 set -euo pipefail
 
-API_BASE="${1:?usage: deploy_static_hf.sh <api-base-url>  (e.g. https://archfev.tailfcb4d3.ts.net:8443)}"
+API_BASE="${1:?usage: deploy_static_hf.sh <api-base-url>  (e.g. https://archfev.tailfcb4d3.ts.net/awaaz)}"
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 PY="$(pwd)/.venv/bin/python"
 [ -x "$PY" ] || PY="python3"
+
+# ── validate the backend base before building anything ────────────────────────
+echo ">> checking backend ${API_BASE}/health ..."
+if ! curl -fsS --max-time 15 "${API_BASE}/health" -o /dev/null 2>/dev/null; then
+  echo "   ✗ backend unreachable at '${API_BASE}'."
+  echo "     Use the PUBLIC funnel URL (no port), e.g.:"
+  echo "       https://archfev.tailfcb4d3.ts.net/awaaz"
+  echo "     NOT the raw backend port (e.g. :7860 — that's plain HTTP, no TLS)."
+  exit 1
+fi
+echo "   backend reachable ✓"
 
 if [ -z "${HF_USER:-}" ]; then read -r -p "Hugging Face username: " HF_USER; fi
 if [ -z "${HF_TOKEN:-}" ]; then read -r -s -p "Hugging Face write token (hf_...): " HF_TOKEN; echo; fi
