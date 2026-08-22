@@ -13,8 +13,9 @@
 #   e.g. ... ./scripts/deploy_redirect_hf.sh https://archfev.tailfcb4d3.ts.net/awaaz/
 set -euo pipefail
 
-TARGET="${1:?usage: deploy_redirect_hf.sh <funnel-ui-url>  (e.g. https://archfev.tailfcb4d3.ts.net/awaaz/)}"
-cd "$(dirname "${BASH_SOURCE[0]}")/.."
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+TARGET="${1:?usage: ./scripts/deploy_redirect_hf.sh <funnel-ui-url>  (e.g. https://archfev.tailfcb4d3.ts.net/awaaz/)}"
+cd "$SCRIPT_DIR/.."
 PY="$(pwd)/.venv/bin/python"
 [ -x "$PY" ] || PY="python3"
 
@@ -33,7 +34,7 @@ echo "   target reachable ✓"
 # build landing page from the template
 OUT="build/redirect"
 mkdir -p "$OUT"
-sed "s|__TARGET_URL__|${TARGET}|g" "$(dirname "${BASH_SOURCE[0]}")/landing_template.html" > "$OUT/index.html"
+sed "s|__TARGET_URL__|${TARGET}|g" "$SCRIPT_DIR/landing_template.html" > "$OUT/index.html"
 
 cat > "$OUT/README.md" <<MD
 ---
