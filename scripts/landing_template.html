@@ -181,7 +181,7 @@
 
     <div class="avail">
       <h3>Online hours</h3>
-      <div class="avail-row"><span>Demo server runs daily</span><span><b id="hoursLabel">10:00 PM – 8:00 PM IST</b></span></div>
+      <div class="avail-row"><span>Demo server runs daily</span><span><b id="hoursLabel">10:00 AM – 8:00 PM IST</b></span></div>
       <div class="timeline" id="timeline"></div>
       <div class="timeline-labels"><span>12 AM</span><span>6 AM</span><span>12 PM</span><span>6 PM</span><span>11 PM</span></div>
     </div>
@@ -203,9 +203,9 @@
 <script>
 "use strict";
 const TARGET = "__TARGET_URL__";
-/* IST = UTC+5:30. Demo online window: 22:00 → 08:00 IST (spans midnight). */
-const LIVE_START_H = 22;
-const LIVE_END_H = 8;
+/* IST = UTC+5:30. Demo online window: 10:00 → 20:00 IST (10 AM – 8 PM). */
+const LIVE_START_H = 10;
+const LIVE_END_H = 20;
 
 function istParts() {
   // compute current time in IST without Intl dependency issues
@@ -214,7 +214,7 @@ function istParts() {
 }
 function isLive() {
   const { h } = istParts();
-  return h >= LIVE_START_H || h < LIVE_END_H;
+  return h >= LIVE_START_H && h < LIVE_END_H;
 }
 function fmtIST() {
   const { h, m } = istParts();
@@ -231,7 +231,7 @@ function paintStatus() {
     txt.textContent = "LIVE NOW · " + fmtIST();
   } else {
     pill.classList.add("off"); pill.classList.remove("live");
-    txt.textContent = "OFFLINE · back at 10:00 PM IST (" + fmtIST() + ")";
+    txt.textContent = "OFFLINE · back at 10:00 AM IST (" + fmtIST() + ")";
   }
 }
 
@@ -240,7 +240,7 @@ function paintTimeline() {
   const { h } = istParts();
   tl.innerHTML = "";
   for (let i = 0; i < 24; i++) {
-    const on = i >= LIVE_START_H || i < LIVE_END_H;
+    const on = i >= LIVE_START_H && i < LIVE_END_H;
     const tick = document.createElement("div");
     tick.className = "tick" + (on ? "" : " off") + (i === h ? " now" : "");
     tick.title = i + ":00 IST " + (on ? "online" : "offline");
