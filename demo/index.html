@@ -270,10 +270,11 @@
 "use strict";
 const $ = (s) => document.querySelector(s);
 
-/* API base: same-origin by default (local/Docker). When the UI is hosted on a
-   static site (HF Space), inject window.AWAAZ_API_BASE to point at the live
-   backend (e.g. Tailscale Funnel URL). */
-const API_BASE = (window.AWAAZ_API_BASE || "").replace(/\/+$/, "");
+/* API base: same-origin by default (local/Docker). When served under a path
+   prefix (Tailscale funnel /awaaz), derive the base from the page URL so
+   fetches stay under the prefix. Static-hosted copies inject
+   window.AWAAZ_API_BASE explicitly. */
+const API_BASE = (window.AWAAZ_API_BASE || location.pathname.replace(/\/+$/, "")).replace(/\/+$/, "");
 
 const LANGUAGES = { en: "English", hi: "हिंदी", mr: "मराठी" };
 let activeLang = "en";
