@@ -108,6 +108,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
     allow_private_network=True,
+    # short preflight cache: failed preflights are cached too, so keep the
+    # failure window small (browsers otherwise hold a bad preflight for 600s)
+    max_age=60,
 )
 
 
