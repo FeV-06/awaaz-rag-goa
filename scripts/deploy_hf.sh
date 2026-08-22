@@ -52,18 +52,36 @@ trap 'rm -rf "$TMP"' EXIT
 # ── 2. create space if missing ────────────────────────────────────────────────
 if ! git ls-remote "$REPO" >/dev/null 2>&1; then
   echo ">> Space ${HF_USER}/${SPACE} not found — creating (Docker SDK)..."
-  "$PY" - "$HF_USER" "$HF_TOKEN" "$SPACE" <<'PY'
+  CREATE_MSG="$("$PY" - "$HF_USER" "$HF_TOKEN" "$SPACE" <<'PY' 2>&1 || true
 import sys
 from huggingface_hub import HfApi
-api = HfApi(token=sys.argv[2])
-api.create_repo(
-    repo_id=f"{sys.argv[1]}/{sys.argv[3]}",
-    repo_type="space",
-    space_sdk="docker",
-    exist_ok=True,
-)
-print("   space created ✓")
+try:
+    api = HfApi(token=sys.argv[2])
+    api.create_repo(
+        repo_id=f"{sys.argv[1]}/{sys.argv[3]}",
+        repo_type="space",
+        space_sdk="docker",
+        exist_ok=True,
+    )
+    print("OK")
+except Exception as e:
+    print(f"FAIL: {e}")
 PY
+)"
+  if [[ "$CREATE_MSG" == OK ]]; then
+    echo "   space created ✓"
+  elif [[ "$CREATE_MSG" == *402* || "$CREATE_MSG" == *Payment* ]]; then
+    echo "   ✗ HF now charges PRO for Docker/Gradio Spaces (402 Payment Required)."
+    echo "     Options:"
+    echo "       A) use your already-running Tailscale Funnel as the live link:"
+    echo "            tailscale funnel 8000 7860"
+    echo "       B) free HF STATIC space (UI only) + funnel API backend"
+    echo "       C) subscribe at https://huggingface.co/pro"
+    exit 1
+  else
+    echo "   ✗ space creation failed: $CREATE_MSG"
+    exit 1
+  fi
 fi
 
 echo ">> cloning Space repo ${HF_USER}/${SPACE}"
