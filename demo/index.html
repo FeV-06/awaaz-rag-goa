@@ -309,12 +309,32 @@ document.querySelectorAll(".ex").forEach(ex => {
 });
 
 /* ---- thinking state ---- */
+function ensureStateContainers() {
+  /* render() replaces #res innerHTML, which destroys #blank/#thinking.
+     Re-create them if missing so the next ask still works. */
+  let blank = $("#blank");
+  if (!blank) {
+    blank = document.createElement("div");
+    blank.id = "blank";
+    blank.innerHTML = `<div class="big">⟨ ⟩</div>STANDBY — ask something to light it up<div class="kbd">press <kbd>Ctrl</kbd> + <kbd>Enter</kbd> to ask</div>`;
+    $("#res").appendChild(blank);
+  }
+  let thinking = $("#thinking");
+  if (!thinking) {
+    thinking = document.createElement("div");
+    thinking.id = "thinking";
+    thinking.innerHTML = `<div class="spinner"></div><div class="tlabel">processing</div><div class="tquery" id="tquery"></div>`;
+    $("#res").appendChild(thinking);
+  }
+}
 function showThinking(q) {
+  ensureStateContainers();
   $("#blank").style.display = "none";
   $("#thinking").style.display = "flex";
   $("#tquery").textContent = q;
 }
 function showBlank() {
+  ensureStateContainers();
   $("#thinking").style.display = "none";
   $("#blank").style.display = "flex";
 }
@@ -403,6 +423,7 @@ function render(d) {
   if (d.error) {
     $("#blank").style.display = "none";
     res.innerHTML = `<h2>response <span class="acc">▤</span></h2><div class="answer declined">${d.error}</div>`;
+    ensureStateContainers();
     return;
   }
 
@@ -448,6 +469,7 @@ function render(d) {
     </div>
     ${sources ? `<details class="sources"><summary>RETRIEVED SOURCES (${d.retrieved_chunks.length})</summary>${sources}</details>` : ""}
   `;
+  ensureStateContainers();
 }
 
 function escapeHtml(s) { return String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
