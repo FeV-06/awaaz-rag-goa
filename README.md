@@ -59,13 +59,23 @@ Every request returns **full stage timing + guardrail audit** so the pipeline is
 ## Quickstart (local)
 
 ```bash
+# 1. clone
+git clone https://github.com/FeV-06/awaaz-rag-goa.git && cd awaaz-rag-goa
 python -m venv .venv && .venv/bin/pip install -r requirements.txt
-# build corpora (downloads ~7.5 GB of parquets once)
-.venv/bin/python data/build_corpus.py --langs en hi mr --max-queries 10000
-# GPU index build (needs CUDA; falls back to CPU)
-.venv/bin/python retrieval/build_indexes_gpu.py
-# run the API
+
+# 2. prebuilt assets — indexes + ONNX models (no GPU, no model downloads)
+./scripts/fetch_assets.sh            # Linux/macOS
+powershell -ExecutionPolicy Bypass -File scripts\fetch_assets.ps1   # Windows
+
+# 3. run the API
 .venv/bin/uvicorn api.main:app --host 0.0.0.0 --port 7860
+```
+
+**GPU / full rebuild (optional, ~20 min):** download the MSMARCO-XI parquets, rebuild corpora and indexes from scratch:
+
+```bash
+.venv/bin/python data/build_corpus.py --langs en hi mr --max-queries 10000
+.venv/bin/python retrieval/build_indexes_gpu.py   # needs CUDA; falls back to CPU
 ```
 
 Optional local LLM synthesis (privacy-first, via Ollama):
