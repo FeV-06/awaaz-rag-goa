@@ -270,6 +270,11 @@
 "use strict";
 const $ = (s) => document.querySelector(s);
 
+/* API base: same-origin by default (local/Docker). When the UI is hosted on a
+   static site (HF Space), inject window.AWAAZ_API_BASE to point at the live
+   backend (e.g. Tailscale Funnel URL). */
+const API_BASE = (window.AWAAZ_API_BASE || "").replace(/\/+$/, "");
+
 const LANGUAGES = { en: "English", hi: "हिंदी", mr: "मराठी" };
 let activeLang = "en";
 let mediaRec = null;
@@ -280,7 +285,7 @@ let recElapsed = 0;
 /* ---- health / status ---- */
 (async function boot() {
   try {
-    const h = await (await fetch("/health")).json();
+    const h = await (await fetch(API_BASE + "/health")).json();
     const langs = (h.configured_languages || []).join(" | ");
     const idx = Object.entries(h.indexes_loaded || {}).map(([k, v]) => `${k}:${v}`).join(" ");
     $('#status').innerHTML =
@@ -349,7 +354,7 @@ async function doAsk(textOverride) {
   fd.append("text", q);
   fd.append("language_hint", activeLang);
   try {
-    const r = await fetch("/query", { method: "POST", body: fd });
+    const r = await fetch(API_BASE + "/query", { method: "POST", body: fd });
     if (!r.ok) throw new Error("HTTP " + r.status);
     render(await r.json());
   } catch (e) {
@@ -388,7 +393,7 @@ $("#mic").onclick = async () => {
       fd.append("language_hint", activeLang);
       showThinking("🎤 voice query");
       try {
-        const r = await fetch("/query", { method: "POST", body: fd });
+        const r = await fetch(API_BASE + "/query", { method: "POST", body: fd });
         render(await r.json());
       } catch (e) { render({ error: String(e), answer: "Request failed: " + e, answer_source: "error", total_ms: 0, stage_timings: [] }); }
       finally { setBusy(false); }
