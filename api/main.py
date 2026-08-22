@@ -23,6 +23,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.requests import Request
+from starlette.responses import Response
 
 import config
 from pipeline.orchestrator import get_orchestrator, RAGPipelineOrchestrator
@@ -72,6 +75,20 @@ async def lifespan(app: FastAPI):
     print("[API Lifespan] Shutting down RAG service.")
 
 
+class PrivateNetworkAccessMiddleware(BaseHTTPMiddleware):
+    """Adds Access-Control-Allow-Private-Network to responses.
+
+    Chrome's Private Network Access (PNA) blocks public pages (e.g. a Hugging
+    Face static Space) from fetching resources in the 'local' address space —
+    which includes Tailscale funnel URLs (100.x CGNAT). The server must opt in
+    on both the preflight and the actual response.
+    """
+    async def dispatch(self, request: Request, call_next) -> Response:
+        response = await call_next(request)
+        response.headers["Access-Control-Allow-Private-Network"] = "true"
+        return response
+
+
 app = FastAPI(
     title="Awaaz — Voice-Enabled Indic RAG",
     description="Low-latency voice RAG for Indic languages (English, Hindi, Marathi): Sarvam STT, FAISS HNSW retrieval, cascaded guardrails, grounded generation.",
@@ -80,12 +97,17 @@ app = FastAPI(
 )
 
 # CORS middleware for demo interface
+# allow_private_network=True: Chrome's Private Network Access (PNA) blocks
+# public pages (e.g. HF static Space) from fetching the backend on a Tailscale
+# funnel address (100.x CGNAT = "local" address space). Native opt-in since
+# Starlette 1.6.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    allow_private_network=True,
 )
 
 
