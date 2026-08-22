@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="theme-color" content="#0C0A09" />
+<title>आवाज़ AWAAZ — Voice-Enabled Indic RAG · Hacker House Goa 2026</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%230C0A09'/><path d='M9 20v-4a7 7 0 0 1 14 0v4' fill='none' stroke='%23F59E0B' stroke-width='2.5' stroke-linecap='round'/><path d='M7 18h18' stroke='%23F59E0B' stroke-width='2.5' stroke-linecap='round'/><path d='M16 9v2' stroke='%23CA8A04' stroke-width='2.5' stroke-linecap='round'/></svg>" />
+<style>
+  :root {
+    --bg: #0C0A09;
+    --surface: #1C1917;
+    --surface-2: #292524;
+    --accent: #CA8A04;
+    --accent-glow: #F59E0B;
+    --text: #FAFAF9;
+    --text-dim: #D6D3D1;
+    --text-faint: #A8A29E;
+    --border: rgba(250,250,249,.1);
+    --border-strong: rgba(250,250,249,.18);
+    --green: #A3E635;
+    --red: #F87171;
+    --mono: "Fira Code", ui-monospace, SFMono-Regular, Menlo, monospace;
+    --sans: "Fira Sans", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    --ease: cubic-bezier(.22,1,.36,1);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background:
+      radial-gradient(1100px 500px at 80% -10%, rgba(202,138,4,.09), transparent 60%),
+      radial-gradient(800px 450px at 0% 110%, rgba(245,158,11,.05), transparent 60%),
+      var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.55;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 34px 18px 30px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { width: 100%; max-width: 680px; animation: fadeUp .6s var(--ease) both; }
+
+  /* header */
+  .badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: var(--mono); font-size: 10px; letter-spacing: 2px;
+    color: var(--text-faint); text-transform: uppercase;
+    border: 1px solid var(--border); background: var(--surface);
+    border-radius: 999px; padding: 6px 14px;
+  }
+  .badge .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent-glow); box-shadow: 0 0 8px var(--accent-glow); }
+
+  /* hero */
+  .hero { text-align: center; margin: 34px 0 30px; }
+  .deva { font-size: clamp(2.4rem, 7vw, 3.4rem); font-weight: 700; color: var(--accent-glow); letter-spacing: 1px; text-shadow: 0 0 34px rgba(245,158,11,.4); }
+  .wordmark { font-family: var(--mono); font-size: 17px; letter-spacing: 9px; color: var(--text); font-weight: 600; margin-top: 8px; }
+  .tagline { font-family: var(--mono); font-size: 11px; letter-spacing: 2.5px; color: var(--text-faint); text-transform: uppercase; margin-top: 10px; }
+  .hero .desc { max-width: 480px; margin: 16px auto 0; color: var(--text-dim); font-size: 14px; }
+
+  /* status pill */
+  .status-pill {
+    display: inline-flex; align-items: center; gap: 9px;
+    font-family: var(--mono); font-size: 12px; letter-spacing: 1.5px;
+    border-radius: 999px; padding: 9px 18px; margin-top: 18px;
+    border: 1px solid var(--border-strong); background: var(--surface);
+  }
+  .status-pill .lamp { width: 9px; height: 9px; border-radius: 50%; }
+  .status-pill.live .lamp { background: var(--green); box-shadow: 0 0 10px var(--green); animation: ping 2s infinite; }
+  .status-pill.off .lamp { background: var(--accent-glow); box-shadow: 0 0 10px var(--accent-glow); }
+  .status-pill .tz { color: var(--text-faint); font-size: 10px; }
+
+  /* CTA card */
+  .card {
+    background: rgba(28,25,23,.85);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 26px;
+    backdrop-filter: blur(14px);
+    text-align: center;
+    margin-top: 22px;
+    transition: border-color .3s var(--ease), transform .3s var(--ease);
+  }
+  .card:hover { border-color: var(--border-strong); }
+  .cta {
+    display: inline-block; cursor: pointer;
+    background: var(--accent); color: #1C1917;
+    font-family: var(--mono); font-weight: 700; font-size: 14px; letter-spacing: 1.5px;
+    border: none; border-radius: 11px; padding: 15px 34px;
+    transition: all .3s var(--ease);
+  }
+  .cta:hover { background: var(--accent-glow); box-shadow: 0 6px 30px rgba(245,158,11,.35); transform: translateY(-1px); }
+  .cta:active { transform: translateY(0); }
+  .cta-hint { font-family: var(--mono); font-size: 10.5px; color: var(--text-faint); margin-top: 12px; letter-spacing: .5px; }
+
+  /* revealed link block */
+  .reveal { display: none; margin-top: 20px; animation: fadeUp .45s var(--ease) both; }
+  .reveal.show { display: block; }
+  .urlbox {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--bg); border: 1px solid var(--border-strong); border-radius: 10px;
+    padding: 10px 14px; font-family: var(--mono); font-size: 12px; color: var(--accent-glow);
+    word-break: break-all; text-align: left;
+  }
+  .urlbox .u { flex: 1; overflow-wrap: anywhere; }
+  .copybtn {
+    flex-shrink: 0; cursor: pointer;
+    background: var(--surface-2); color: var(--text);
+    font-family: var(--mono); font-size: 11px; letter-spacing: 1px;
+    border: 1px solid var(--border-strong); border-radius: 8px; padding: 8px 14px;
+    transition: all .25s var(--ease);
+  }
+  .copybtn:hover { border-color: var(--accent); color: var(--accent-glow); }
+  .copybtn.copied { border-color: var(--green); color: var(--green); }
+  .openlink { display: inline-block; margin-top: 14px; font-family: var(--mono); font-size: 12px; letter-spacing: 1px; color: var(--accent-glow); text-decoration: none; border-bottom: 1px dashed rgba(245,158,11,.4); padding-bottom: 2px; }
+  .openlink:hover { color: var(--text); }
+  .reveal-note { font-family: var(--mono); font-size: 10.5px; color: var(--text-faint); margin-top: 12px; }
+
+  /* availability */
+  .avail { margin-top: 18px; text-align: left; }
+  .avail h3 { font-family: var(--mono); font-size: 10.5px; letter-spacing: 2.5px; color: var(--text-faint); text-transform: uppercase; margin-bottom: 12px; }
+  .avail-row { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 12px; color: var(--text-dim); margin-bottom: 10px; }
+  .avail-row b { color: var(--accent-glow); font-weight: 600; }
+  .timeline {
+    display: grid; grid-template-columns: repeat(24, 1fr); gap: 2px;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 8px;
+  }
+  .tick { height: 18px; border-radius: 3px; background: var(--accent); opacity: .85; }
+  .tick.off { background: var(--surface-2); }
+  .tick.now { outline: 2px solid var(--text); outline-offset: 1px; }
+  .timeline-labels { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 9px; color: var(--text-faint); margin-top: 6px; letter-spacing: .5px; }
+
+  /* features */
+  .features { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 18px; }
+  .feat { background: rgba(28,25,23,.6); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; }
+  .feat .k { font-family: var(--mono); font-size: 9.5px; letter-spacing: 2px; color: var(--text-faint); text-transform: uppercase; }
+  .feat .v { font-family: var(--mono); font-size: 15px; color: var(--accent-glow); margin-top: 6px; font-weight: 600; }
+  .feat .d { font-size: 11.5px; color: var(--text-faint); margin-top: 3px; }
+
+  /* footer */
+  footer { margin-top: 30px; text-align: center; font-family: var(--mono); font-size: 10.5px; color: var(--text-faint); letter-spacing: 1.5px; line-height: 2; }
+  footer a { color: var(--accent-glow); text-decoration: none; }
+  footer .hash { color: var(--accent-glow); }
+
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes ping { 0%,100% { box-shadow: 0 0 0 0 rgba(163,230,53,.5);} 70% { box-shadow: 0 0 0 7px rgba(163,230,53,0);} }
+
+  @media (max-width: 520px) {
+    .features { grid-template-columns: 1fr; }
+    .urlbox { flex-direction: column; align-items: stretch; }
+    .copybtn { width: 100%; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div style="text-align:center"><span class="badge"><span class="dot"></span>Hacker House Goa 2026 · Task 2</span></div>
+
+  <div class="hero">
+    <div class="deva">आवाज़</div>
+    <div class="wordmark">AWAAZ</div>
+    <div class="tagline">Voice · Indic · RAG</div>
+    <p class="desc">Voice-enabled retrieval-augmented generation for <b>English, हिंदी, and मराठी</b> — sub-200&nbsp;ms answers, four-tier guardrails, fully telemetried.</p>
+    <div class="status-pill" id="status"><span class="lamp"></span><span id="statusText">checking…</span><span class="tz">IST</span></div>
+  </div>
+
+  <div class="card">
+    <button class="cta" id="cta">▸ OPEN THE LIVE DEMO</button>
+    <div class="cta-hint">the demo runs from our machine — copy the link and open it in a new tab</div>
+
+    <div class="reveal" id="reveal">
+      <div class="urlbox">
+        <span class="u" id="urlText">__TARGET_URL__</span>
+        <button class="copybtn" id="copyBtn">COPY</button>
+      </div>
+      <a class="openlink" id="openLink" href="__TARGET_URL__" target="_blank" rel="noopener">open in new tab →</a>
+      <div class="reveal-note">if your browser blocks the auto-open, paste the copied link into the address bar — always works.</div>
+    </div>
+
+    <div class="avail">
+      <h3>Online hours</h3>
+      <div class="avail-row"><span>Demo server runs daily</span><span><b id="hoursLabel">10:00 PM – 8:00 PM IST</b></span></div>
+      <div class="timeline" id="timeline"></div>
+      <div class="timeline-labels"><span>12 AM</span><span>6 AM</span><span>12 PM</span><span>6 PM</span><span>11 PM</span></div>
+    </div>
+  </div>
+
+  <div class="features">
+    <div class="feat"><div class="k">Languages</div><div class="v">en · hi · mr</div><div class="d">English, हिंदी, मराठी</div></div>
+    <div class="feat"><div class="k">Latency</div><div class="v">P50 141 ms</div><div class="d">93% cold-start SLA ≤200ms</div></div>
+    <div class="feat"><div class="k">Vectors</div><div class="v">296,462</div><div class="d">FAISS HNSW + 864 longdocs</div></div>
+    <div class="feat"><div class="k">Guardrails</div><div class="v">4-tier</div><div class="d">Prompt-Guard 86M · grounding gate</div></div>
+  </div>
+
+  <footer>
+    built by Sahil · Gourish · Sparsh &nbsp;·&nbsp; <a href="https://github.com/FeV-06/awaaz-rag-goa" target="_blank" rel="noopener">github.com/FeV-06/awaaz-rag-goa</a><br/>
+    <span class="hash">#RAGInGoa</span>
+  </footer>
+</div>
+
+<script>
+"use strict";
+const TARGET = "__TARGET_URL__";
+/* IST = UTC+5:30. Demo online window: 22:00 → 08:00 IST (spans midnight). */
+const LIVE_START_H = 22;
+const LIVE_END_H = 8;
+
+function istParts() {
+  // compute current time in IST without Intl dependency issues
+  const d = new Date(Date.now() + 330 * 60000);
+  return { h: d.getUTCHours(), m: d.getUTCMinutes() };
+}
+function isLive() {
+  const { h } = istParts();
+  return h >= LIVE_START_H || h < LIVE_END_H;
+}
+function fmtIST() {
+  const { h, m } = istParts();
+  const hh = ((h + 11) % 12) + 1;
+  const ap = h >= 12 ? "PM" : "AM";
+  return hh + ":" + String(m).padStart(2, "0") + " " + ap;
+}
+
+function paintStatus() {
+  const pill = document.getElementById("status");
+  const txt = document.getElementById("statusText");
+  if (isLive()) {
+    pill.classList.add("live"); pill.classList.remove("off");
+    txt.textContent = "LIVE NOW · " + fmtIST();
+  } else {
+    pill.classList.add("off"); pill.classList.remove("live");
+    txt.textContent = "OFFLINE · back at 10:00 PM IST (" + fmtIST() + ")";
+  }
+}
+
+function paintTimeline() {
+  const tl = document.getElementById("timeline");
+  const { h } = istParts();
+  tl.innerHTML = "";
+  for (let i = 0; i < 24; i++) {
+    const on = i >= LIVE_START_H || i < LIVE_END_H;
+    const tick = document.createElement("div");
+    tick.className = "tick" + (on ? "" : " off") + (i === h ? " now" : "");
+    tick.title = i + ":00 IST " + (on ? "online" : "offline");
+    tl.appendChild(tick);
+  }
+}
+
+/* CTA reveal + copy */
+const cta = document.getElementById("cta");
+const reveal = document.getElementById("reveal");
+const copyBtn = document.getElementById("copyBtn");
+const openLink = document.getElementById("openLink");
+
+cta.addEventListener("click", () => {
+  reveal.classList.toggle("show");
+  cta.textContent = reveal.classList.contains("show") ? "▾ HIDE LINK" : "▸ OPEN THE LIVE DEMO";
+});
+
+function copyUrl() {
+  const url = TARGET;
+  const done = () => {
+    copyBtn.textContent = "✓ COPIED";
+    copyBtn.classList.add("copied");
+    setTimeout(() => { copyBtn.textContent = "COPY"; copyBtn.classList.remove("copied"); }, 2500);
+  };
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(url).then(done).catch(() => fallbackCopy(url, done));
+  } else {
+    fallbackCopy(url, done);
+  }
+}
+function fallbackCopy(url, done) {
+  const ta = document.createElement("textarea");
+  ta.value = url;
+  ta.style.position = "fixed";
+  ta.style.opacity = "0";
+  document.body.appendChild(ta);
+  ta.select();
+  try { document.execCommand("copy"); done(); } catch (e) { /* noop */ }
+  document.body.removeChild(ta);
+}
+copyBtn.addEventListener("click", copyUrl);
+openLink.href = TARGET;
+
+paintStatus();
+paintTimeline();
+setInterval(paintStatus, 30000); // refresh the clock every 30s
+</script>
+</body>
+</html>
