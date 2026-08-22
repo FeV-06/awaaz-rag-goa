@@ -30,7 +30,8 @@ if ! curl -fsS --max-time 15 "${TARGET}" -o /dev/null 2>/dev/null; then
 fi
 echo "   target reachable ✓"
 
-# build redirect page (JS first, meta refresh fallback)
+# build landing page: a USER-INITIATED link (click) is allowed by Firefox LNA;
+# an automatic redirect from a public page is not.
 OUT="build/redirect"
 mkdir -p "$OUT"
 cat > "$OUT/index.html" <<HTML
@@ -38,14 +39,28 @@ cat > "$OUT/index.html" <<HTML
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta http-equiv="refresh" content="0; url=${TARGET}" />
-<title>आवाज़ AWAAZ — redirecting…</title>
-<style>body{background:#0C0A09;color:#FAFAF9;font-family:ui-monospace,monospace;display:flex;align-items:center;justify-content:center;height:100vh;margin:0}div{text-align:center}a{color:#F59E0B}</style>
+<title>आवाज़ AWAAZ — Voice-Enabled Indic RAG</title>
+<style>
+  body{background:#0C0A09;color:#FAFAF9;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0}
+  .card{background:#1C1917;border:1px solid rgba(250,250,249,.1);border-radius:14px;padding:42px 48px;text-align:center;max-width:520px}
+  .deva{font-size:34px;color:#F59E0B;text-shadow:0 0 24px rgba(245,158,11,.35)}
+  h1{font-size:15px;letter-spacing:5px;margin:10px 0 6px}
+  .sub{color:#A8A29E;font-size:11px;letter-spacing:1.5px;margin-bottom:26px}
+  a.btn{display:inline-block;background:#CA8A04;color:#1C1917;font-weight:700;text-decoration:none;padding:13px 28px;border-radius:10px;letter-spacing:1px;transition:all .3s}
+  a.btn:hover{background:#F59E0B;box-shadow:0 4px 26px rgba(245,158,11,.32)}
+  .note{color:#6B7A90;font-size:10px;margin-top:18px;line-height:1.6}
+  a.plain{color:#F59E0B}
+</style>
 </head>
 <body>
-<div>आवाज़ AWAAZ — loading the live demo…<br/>
-<noscript><a href="${TARGET}">Click here if you are not redirected</a></noscript></div>
-<script>window.location.replace("${TARGET}");</script>
+<div class="card">
+  <div class="deva">आवाज़</div>
+  <h1>AWAAZ</h1>
+  <div class="sub">VOICE · INDIC · RAG</div>
+  <a class="btn" href="${TARGET}">▶ OPEN LIVE DEMO</a>
+  <div class="note">Opens the demo at <a class="plain" href="${TARGET}">${TARGET}</a><br/>
+  (browser security blocks automatic redirects to local networks — a click is always allowed)</div>
+</div>
 </body>
 </html>
 HTML
@@ -60,6 +75,10 @@ sdk: static
 pinned: false
 ---
 Redirects to the live AWAAZ demo at \`${TARGET}\` (same-origin UI — no CORS).
+
+The landing page uses a user-initiated link (click) so Firefox's Local Network
+Access does not block it (auto-redirects from public pages to local-network
+addresses are blocked; a click is always allowed).
 MD
 
 echo ">> validating token..."
